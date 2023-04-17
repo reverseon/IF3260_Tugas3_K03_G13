@@ -1,0 +1,63 @@
+html {
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+#main {
+    margin: 20px;
+    width: calc(100% - 40px);
+    height: calc(100% - 40px);
+    padding: 20px;
+    border: black 1px solid;
+    display: flex;
+    gap: 20px;
+}
+
+#canvas {
+    /*width: fit-content;*/
+    /*height: fit-content;*/
+    border: black 1px solid;
+    display: inline-block;
+}
+
+#control {
+    height: fit-content;
+    width: 100%;
+    border: black 1px solid;
+    padding: 20px;
+    gap: 20px;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+label {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+#slider-control {
+    margin-top: 20px;
+}
+
+#component-control {
+    align-self: flex-start;
+}
