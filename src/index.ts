@@ -7,9 +7,12 @@ import {MathUtil} from "./util/MathUtil";
 import {Component, ComponentSaver} from "./model/Component";
 import Tex from "../shape/texture/tex_placeholder.jpg";
 import {Vec2} from "./model/Vec2";
-import {downloadToSaveJSON} from "./model_generator/example_model";
+import {downloadPigModel} from "./model_generator/pig_model";
+import { downloadToSaveJSON } from "./model_generator/example_model";
 import ExampleModel from "../shape/example_model.json";
+import PigModel from "../shape/pig.json"
 
+let model =ExampleModel;
 let isFirstRun = true;
 const vertexShaderSource = `
     attribute vec4 a_position;
@@ -291,7 +294,7 @@ const main = async (): Promise<void> => {
 
     // LOADING MODEL & ITS TEXTURE //
 
-    toRender = await loadModelJson(gl, ExampleModel);
+    toRender = await loadModelJson(gl, model);
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
     // console.log("currentComponent:", currentComponent)
@@ -302,13 +305,15 @@ const main = async (): Promise<void> => {
     const lookAtCurrentComponent = document.getElementById('lookat-current-component-checkbox') as HTMLInputElement;
 
 
-    const reRender = () => {
+    const reRender = async () => {
         // update camera center to current component
         if (lookAtCurrentComponent.checked) {
             camera.centeredAt = currentComponent.center;
         } else {
             camera.centeredAt = new Vec4([0,0,0,1]);
         }
+        toRender = await loadModelJson(gl,model);
+        currentComponent = toRender.topLevelComponents[0];
         render(gl, program, camera, toRender!)
     }
 
@@ -497,6 +502,17 @@ const main = async (): Promise<void> => {
     const downloadSampleModel = document.getElementById('download-sample-model') as HTMLButtonElement;
     downloadSampleModel.addEventListener('click', () => {
         downloadToSaveJSON();
+    })
+
+    const selectModel = document.getElementById('character-select') as HTMLSelectElement;
+    selectModel.addEventListener('change',() => {
+        if (selectModel.value == "pig") {            
+            model = PigModel
+        }
+        else if (selectModel.value=="sample") {
+            model = ExampleModel
+        }
+        reRender();
     })
 
 }
