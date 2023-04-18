@@ -6,7 +6,6 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tubes 3 Grafkom</title>
-    <script src="../model/Component.ts"></script>
 </head>
 <body>
     <div id="main">
@@ -61,8 +60,14 @@
                     <br />
                     <!-- scale slider -->
                     <div id="component-scale-control">
-                        <label for="component-scale-slider">Scale:</label>
-                        <input type="range" name="scale" id="component-scale-slider" min="0.1" max="2" value="1" step="0.01">
+                        <label for="component-scale-x-slider">Scale X:</label>
+                        <input type="range" name="scale" id="component-scale-x-slider" min="0.1" max="2" value="1" step="0.01">
+                        <br />
+                        <label for="component-scale-y-slider">Scale Y:</label>
+                        <input type="range" name="scale" id="component-scale-y-slider" min="0.1" max="2" value="1" step="0.01">
+                        <br />
+                        <label for="component-scale-z-slider">Scale Z:</label>
+                        <input type="range" name="scale" id="component-scale-z-slider" min="0.1" max="2" value="1" step="0.01">
                     </div>
                     <br />
                     <!-- translation slider -->
@@ -81,10 +86,17 @@
                     <button id="component-reset-button">Reset</button>
                 </div>
             </div>
-            <div id="component-tree-wrapper">
-                <ul id="component-tree">
-                    <!-- dynamically added -->
-                </ul>
+            <div>
+                <div id="component-tree-wrapper">
+                    <ul id="component-tree">
+                        <!-- dynamically added -->
+                    </ul>
+                </div>
+                <div id="animation-controller-wrapper" style="margin-top: 20px; border: 1px solid black; padding: 20px;">
+                    Animation
+                    <br /><br />
+                    <button id="animation-toggler" style="margin-right: 20px;">Play</button>Frame: <span id="frame-counter">0</span>
+                </div>
             </div>
             <div>
                 <button id="download-sample-model">Download Sample Model</button> <br>

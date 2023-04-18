@@ -7,12 +7,10 @@ import {MathUtil} from "./util/MathUtil";
 import {Component, ComponentSaver} from "./model/Component";
 import Tex from "../shape/texture/tex_placeholder.jpg";
 import {Vec2} from "./model/Vec2";
-import {downloadPigModel} from "./model_generator/pig_model";
-import { downloadToSaveJSON } from "./model_generator/example_model";
+import {downloadToSaveJSON} from "./model_generator/example_model";
 import ExampleModel from "../shape/example_model.json";
-import PigModel from "../shape/pig.json"
+import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
 
-let model =ExampleModel;
 let isFirstRun = true;
 const vertexShaderSource = `
     attribute vec4 a_position;
@@ -251,12 +249,10 @@ const resetCamParams = (gl: WebGLRenderingContext, camera: CameraSettings, mode:
     }
 }
 
-const loadModelJson = async (gl: WebGLRenderingContext, json: any): Promise<ComponentSaver> => {
-    // this json is from JSON.stringify(ComponentSaver), write to get back
-    const newComponentSaver = ComponentSaver.loadfromJSON(json);
+const setTexturesFromComponentSaver = async (gl: WebGLRenderingContext, compSaver: ComponentSaver): Promise<void> => {
     const imgloadPromise = new Promise (resolve => {
         const img = new Image();
-        img.src = newComponentSaver.texturePath;
+        img.src = compSaver.texturePath;
         img.onload = function () {
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -264,14 +260,24 @@ const loadModelJson = async (gl: WebGLRenderingContext, json: any): Promise<Comp
             if (isPowerOf2(img.width) && isPowerOf2(img.height)) {
                 gl.generateMipmap(gl.TEXTURE_2D);
             } else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                // repeat
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
             }
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             resolve(0);
         }
     })
     await imgloadPromise;
+}
+
+const loadModelJson = async (gl: WebGLRenderingContext, json: any): Promise<ComponentSaver> => {
+    // this json is from JSON.stringify(ComponentSaver), write to get back
+    const newComponentSaver = ComponentSaver.loadfromJSON(json);
+    await setTexturesFromComponentSaver(gl, newComponentSaver);
     return newComponentSaver;
 }
 
@@ -294,7 +300,9 @@ const main = async (): Promise<void> => {
 
     // LOADING MODEL & ITS TEXTURE //
 
-    toRender = await loadModelJson(gl, model);
+    // toRender = await loadModelJson(gl, ExampleModel);
+    toRender = creeperGenerator();
+    await setTexturesFromComponentSaver(gl, toRender)
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
     // console.log("currentComponent:", currentComponent)
@@ -305,15 +313,13 @@ const main = async (): Promise<void> => {
     const lookAtCurrentComponent = document.getElementById('lookat-current-component-checkbox') as HTMLInputElement;
 
 
-    const reRender = async () => {
+    const reRender = () => {
         // update camera center to current component
         if (lookAtCurrentComponent.checked) {
             camera.centeredAt = currentComponent.center;
         } else {
             camera.centeredAt = new Vec4([0,0,0,1]);
         }
-        toRender = await loadModelJson(gl,model);
-        currentComponent = toRender.topLevelComponents[0];
         render(gl, program, camera, toRender!)
     }
 
@@ -403,7 +409,9 @@ const main = async (): Promise<void> => {
     const comYTransSlider = document.getElementById('component-y-translation-slider') as HTMLInputElement;
     const comZTransSlider = document.getElementById('component-z-translation-slider') as HTMLInputElement;
     // component scale
-    const comScaleSlider = document.getElementById('component-scale-slider') as HTMLInputElement;
+    const comScaleXSlider = document.getElementById('component-scale-x-slider') as HTMLInputElement;
+    const comScaleYSlider = document.getElementById('component-scale-y-slider') as HTMLInputElement;
+    const comScaleZSlider = document.getElementById('component-scale-z-slider') as HTMLInputElement;
     // component reset
     const comReset = document.getElementById('component-reset-button') as HTMLButtonElement;
     // add listener
@@ -431,8 +439,16 @@ const main = async (): Promise<void> => {
         currentComponent.translation.z = comZTransSlider.valueAsNumber;
         reRender();
     })
-    comScaleSlider.addEventListener('input', () => {
-        currentComponent.scale = new Vec4([comScaleSlider.valueAsNumber, comScaleSlider.valueAsNumber, comScaleSlider.valueAsNumber, 1]);
+    comScaleXSlider.addEventListener('input', () => {
+        currentComponent.scale.x = comScaleXSlider.valueAsNumber;
+        reRender();
+    })
+    comScaleYSlider.addEventListener('input', () => {
+        currentComponent.scale.y = comScaleYSlider.valueAsNumber;
+        reRender();
+    })
+    comScaleZSlider.addEventListener('input', () => {
+        currentComponent.scale.z = comScaleZSlider.valueAsNumber;
         reRender();
     })
     comReset.addEventListener('click', () => {
@@ -442,7 +458,9 @@ const main = async (): Promise<void> => {
         comXTransSlider.value = '0';
         comYTransSlider.value = '0';
         comZTransSlider.value = '0';
-        comScaleSlider.value = '1';
+        comScaleXSlider.value = '1';
+        comScaleYSlider.value = '1';
+        comScaleZSlider.value = '1';
         currentComponent.resetTransformation();
         reRender();
     })
@@ -480,7 +498,9 @@ const main = async (): Promise<void> => {
                     comXTransSlider.valueAsNumber = currentComponent.translation.x;
                     comYTransSlider.valueAsNumber = currentComponent.translation.y;
                     comZTransSlider.valueAsNumber = currentComponent.translation.z;
-                    comScaleSlider.valueAsNumber = currentComponent.scale.x;
+                    comScaleXSlider.valueAsNumber = currentComponent.scale.x;
+                    comScaleYSlider.valueAsNumber = currentComponent.scale.y;
+                    comScaleZSlider.valueAsNumber = currentComponent.scale.z;
                     reRender();
                 }
                 treeListenerArray.push(listener);
@@ -501,20 +521,29 @@ const main = async (): Promise<void> => {
     // download sample model
     const downloadSampleModel = document.getElementById('download-sample-model') as HTMLButtonElement;
     downloadSampleModel.addEventListener('click', () => {
-        downloadToSaveJSON();
+        creeperToDownloadedJSON()
     })
 
-    const selectModel = document.getElementById('character-select') as HTMLSelectElement;
-    selectModel.addEventListener('change',() => {
-        if (selectModel.value == "pig") {            
-            model = PigModel
+    // ANIMATION CONTROLLER
+    let isPaused = true;
+    const frameCounter = document.getElementById('frame-counter') as HTMLSpanElement;
+    const animItv = setInterval(() => {
+        if (!isPaused) {
+            Component.currentFrame = (Component.currentFrame + 1) % toRender!.totalAnimationFrames;
+            frameCounter.innerText = Component.currentFrame.toString();
+            reRender();
         }
-        else if (selectModel.value=="sample") {
-            model = ExampleModel
+    }, 1000 / toRender.totalAnimationFrames)
+    const animationToggler = document.getElementById('animation-toggler') as HTMLButtonElement;
+    animationToggler.addEventListener('click', () => {
+        if (animationToggler.innerText === 'Play') {
+            animationToggler.innerText = 'Pause'
+            isPaused = false;
+        } else {
+            animationToggler.innerText = 'Play'
+            isPaused = true;
         }
-        reRender();
     })
-
 }
 
 main().then(() => {

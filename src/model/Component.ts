@@ -6,7 +6,8 @@ import {Vec2} from "./Vec2";
 class Component {
     static idCounter: number = 0;
     public id: number = Component.idCounter++;
-    public animationMatrixFrame: Mat4 = Mat4.identity();
+    public animationMatrix?: Mat4[]
+    public static currentFrame: number = 0;
     public name: string;
     public children?: Component[];
     public positionArray: Vec4[];
@@ -31,6 +32,9 @@ class Component {
         let rotationMatrix = Mat4.rotation_y(this.rotationRad.y).mul(Mat4.rotation_x(this.rotationRad.x)).mul(Mat4.rotation_z(this.rotationRad.z));
         let scaleMatrix = Mat4.scale(this.scale.x, this.scale.y, this.scale.z);
         let toOriginMatrix = Mat4.translation(-this.relativeCenter.x, -this.relativeCenter.y, -this.relativeCenter.z);
+        if (this.animationMatrix !== undefined && Component.currentFrame < this.animationMatrix.length) {
+            return toCenterMatrix.mul(this.animationMatrix[Component.currentFrame]).mul(translationMatrix).mul(rotationMatrix).mul(scaleMatrix).mul(toOriginMatrix);
+        }
         return toCenterMatrix.mul(translationMatrix).mul(rotationMatrix).mul(scaleMatrix).mul(toOriginMatrix);
     }
     public resetTransformation() {
@@ -123,18 +127,23 @@ class Component {
 class ComponentSaver {
     public name: string;
     public topLevelComponents: Component[];
+    public totalAnimationFrames: number = 0;
     public texturePath: string;
     public animationMatrixPath: string = ""
-    public constructor(name: string, texturePath: string) {
+    public constructor(name: string, texturePath: string, totalAnimationFrames: number = 0) {
         this.name = name;
         this.topLevelComponents = [];
         this.texturePath = texturePath;
+        this.totalAnimationFrames = totalAnimationFrames;
+    }
+    public isAnimation(): boolean {
+        return this.totalAnimationFrames > 0;
     }
     public addComponent(component: Component) {
         this.topLevelComponents.push(component);
     }
     static loadfromJSON(json: any): ComponentSaver {
-        let componentSaver = new ComponentSaver(json.name, json.texturePath);
+        let componentSaver = new ComponentSaver(json.name, json.texturePath, json.totalAnimationFrames);
         componentSaver.animationMatrixPath = json.animationMatrixPath;
         for (let i = 0; i < json.topLevelComponents.length; i++) {
             componentSaver.topLevelComponents.push(Component.loadfromJSON(json.topLevelComponents[i]));

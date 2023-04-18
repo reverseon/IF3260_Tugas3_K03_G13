@@ -48,6 +48,9 @@ abstract class MathUtil {
         return result;
     }
 
+    public static lerpf = (a: number, b: number, t: number): number => {
+        return a + (b - a) * t;
+    }
     public static makeNormalArray = (array: Vec4[]): Vec4[] => {
         const result: Vec4[] = [];
         for (let i = 0; i < array.length; i += 3) {
