@@ -55,6 +55,9 @@ class Vec2 {
     lerp(vec: Vec2, t: number): Vec2 {
         return this.add(vec.subtract(this).multiply_scalar(t));
     }
+    static loadFromJson(json: any): Vec2 {
+        return new Vec2(json.memory);
+    }
 }
 
 export { Vec2 };

@@ -29,6 +29,7 @@ img {
     padding: 20px;
     border: black 1px solid;
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
 }
 
@@ -41,7 +42,8 @@ img {
 
 #control {
     height: fit-content;
-    width: 100%;
+    width: fit-content;
+    flex-grow: 1;
     border: black 1px solid;
     padding: 20px;
     gap: 20px;
@@ -60,4 +62,28 @@ label {
 
 #component-control {
     align-self: flex-start;
+}
+
+#component-tree-wrapper {
+    border: black 1px solid;
+    padding: 20px;
+}
+
+#component-tree li {
+    /*background-color: #4CAF50;*/
+    /*border: none;*/
+    border: 1px solid black;
+    width: fit-content;
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    color: white;
+    background: black;
+    /*padding: 12px 24px;*/
+    /*text-align: center;*/
+    /*text-decoration: none;*/
+    /*display: inline-block;*/
+    /*font-size: 16px;*/
+    /*margin: 4px 2px;*/
+    cursor: pointer;
 }

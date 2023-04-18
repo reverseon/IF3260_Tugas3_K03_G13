@@ -35,13 +35,13 @@ class CameraSettings {
         // let scaleMatrix = Mat4.scale(this.scale.x, this.scale.y, this.scale.z);
         // console.log("scaleMatrix", scaleMatrix)
         let viewMatrix = rotationMatrix.mul(translationMatrix)
-        console.log("viewMatrix")
-        viewMatrix.print()
-        console.log("rotationRad", this.rotationRad.y)
-        console.log("rotationMatrix")
-        rotationMatrix.print()
-        console.log("translationMatrix")
-        translationMatrix.print()
+        // console.log("viewMatrix")
+        // viewMatrix.print()
+        // console.log("rotationRad", this.rotationRad.y)
+        // console.log("rotationMatrix")
+        // rotationMatrix.print()
+        // console.log("translationMatrix")
+        // translationMatrix.print()
         const lookAtMatrix = Mat4.look_at(
             new Vec3([
                 viewMatrix.memory[12],
@@ -51,7 +51,7 @@ class CameraSettings {
             this.centeredAt.xyz,
             Vec3.up()
         )
-        console.log("centeredAt", this.centeredAt.xyz)
+        // console.log("centeredAt", this.centeredAt.xyz)
         return lookAtMatrix.inverse()
     }
     getProjectionMatrix(): Mat4 {
@@ -64,35 +64,32 @@ class CameraSettings {
                 return Mat4.oblique(this.theta, this.phi, this.width, this.height, this.depth);
         }
     }
-    setPerspectiveMode(fov: number, aspect: number, near: number, far: number, scale: Vec4, centeredAt: Vec4, camPos: Vec4) {
+    setPerspectiveMode(fov: number, aspect: number, near: number, far: number, scale: Vec4, camPos: Vec4) {
         this.mode = CameraMode.Perspective;
         this.fov = fov;
         this.aspect = aspect;
         this.near = near;
         this.far = far;
-        this.centeredAt = centeredAt;
         this.translation = camPos;
         this.scale = scale;
     }
 
-    setOrthographicMode(width: number, height: number, depth: number, scale: Vec4, centeredAt: Vec4, camPos: Vec4) {
+    setOrthographicMode(width: number, height: number, depth: number, scale: Vec4, camPos: Vec4) {
         this.mode = CameraMode.Orthographic;
         this.width = width;
         this.height = height;
         this.depth = depth;
-        this.centeredAt = centeredAt;
         this.translation = camPos;
         this.scale = scale;
     }
 
-    setObliqueMode(theta: number, phi: number, width: number, height: number, depth: number, scale: Vec4, centeredAt: Vec4, camPos: Vec4) {
+    setObliqueMode(theta: number, phi: number, width: number, height: number, depth: number, scale: Vec4, camPos: Vec4) {
         this.mode = CameraMode.Oblique;
         this.theta = theta;
         this.phi = phi;
         this.width = width;
         this.height = height;
         this.depth = depth;
-        this.centeredAt = centeredAt;
         this.translation = camPos;
         this.scale = scale;
     }

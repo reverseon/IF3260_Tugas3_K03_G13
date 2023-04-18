@@ -39,6 +39,9 @@ class Vec4 {
     public get xyz(): Vec3 {
         return new Vec3([this.x, this.y, this.z]);
     }
+    static loadFromJson(json: any): Vec4 {
+        return new Vec4(json.memory);
+    }
 
     constructor(vec: number[]) {
         this.memory = vec;

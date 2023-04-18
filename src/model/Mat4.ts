@@ -297,6 +297,9 @@ class Mat4 {
         let ortho = Mat4.orthographic(w, h, d);
         return oblique.mul(ortho);
     }
+    static loadFromJson(json: any): Mat4 {
+        return new Mat4(json.memory);
+    }
 }
 
 export { Mat4 }

@@ -1,6 +1,7 @@
 import {Vec4} from "../model/Vec4";
 import {Vec3} from "../model/Vec3";
 import {Mat4} from "../model/Mat4";
+import {Vec2} from "../model/Vec2";
 
 abstract class MathUtil {
     public static normalOfTriangle = (a: Vec3, b: Vec3, c: Vec3): Vec3 => {
@@ -23,6 +24,26 @@ abstract class MathUtil {
             result[i * 4 + 1] = vec.y;
             result[i * 4 + 2] = vec.z;
             result[i * 4 + 3] = vec.w;
+        }
+        return result;
+    }
+    public static makeFloat32ArrayFromVec3Array = (array: Vec3[]): Float32Array => {
+        const result = new Float32Array(array.length * 3);
+        for (let i = 0; i < array.length; i++) {
+            const vec = array[i];
+            result[i * 3] = vec.x;
+            result[i * 3 + 1] = vec.y;
+            result[i * 3 + 2] = vec.z;
+        }
+        return result;
+    }
+
+    public static makeFloat32ArrayFromVec2Array = (array: Vec2[]): Float32Array => {
+        const result = new Float32Array(array.length * 2);
+        for (let i = 0; i < array.length; i++) {
+            const vec = array[i];
+            result[i * 2] = vec.x;
+            result[i * 2 + 1] = vec.y;
         }
         return result;
     }

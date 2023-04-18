@@ -96,6 +96,9 @@ class Vec3 {
     equals(vec: Vec3): boolean {
         return this.x == vec.x && this.y == vec.y && this.z == vec.z;
     }
+    static loadFromJson(json: any): Vec3 {
+        return new Vec3(json.memory);
+    }
 }
 
 export { Vec3 };
