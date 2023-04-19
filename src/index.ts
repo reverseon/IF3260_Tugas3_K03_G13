@@ -11,6 +11,7 @@ import {downloadToSaveJSON} from "./model_generator/example_model";
 import ExampleModel from "../shape/example_model.json";
 import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
 import steveGenerator, {steveToDownloadedJSON} from "./model_generator/steve_generator";
+import pigGenerator from "./model_generator/pig_model";
 
 let isFirstRun = true;
 const vertexShaderSource = `
@@ -301,7 +302,7 @@ const main = async (): Promise<void> => {
 
     // LOADING MODEL & ITS TEXTURE //
 
-    toRender = steveGenerator();
+    toRender = pigGenerator();
     await setTexturesFromComponentSaver(gl, toRender)
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
@@ -343,6 +344,8 @@ const main = async (): Promise<void> => {
             case 'creeper':
                 toRender = creeperGenerator();
                 break;
+            case 'pig':
+                toRender = pigGenerator();
             default:
                 throw new Error('invalid model');
         }
