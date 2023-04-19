@@ -551,9 +551,6 @@ export default function steveGenerator(): ComponentSaver {
     return toSave;
 }
 
-
-
-
 const steveToDownloadedJSON = () => {
     // make a link to download the file
     const componentSaver = steveGenerator();

@@ -553,7 +553,16 @@ const main = async (): Promise<void> => {
     // download sample model
     const downloadSampleModel = document.getElementById('download-sample-model') as HTMLButtonElement;
     downloadSampleModel.addEventListener('click', () => {
-        creeperToDownloadedJSON()
+        switch (modelSelection.value) {
+            case 'steve':
+                steveToDownloadedJSON()
+                break;
+            case 'creeper':
+                creeperToDownloadedJSON()
+                break;
+            default:
+                throw new Error('invalid model');
+        }
     })
 
     // ANIMATION CONTROLLER
