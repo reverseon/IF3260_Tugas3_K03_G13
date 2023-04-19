@@ -11,6 +11,7 @@ import {downloadToSaveJSON} from "./model_generator/example_model";
 import ExampleModel from "../shape/example_model.json";
 import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
 import steveGenerator, {steveToDownloadedJSON} from "./model_generator/steve_generator";
+import ghastGenerator, {ghastToDownloadedJSON} from "./model_generator/ghast_generator";
 import pigGenerator from "./model_generator/pig_model";
 
 let isFirstRun = true;
@@ -346,6 +347,9 @@ const main = async (): Promise<void> => {
                 break;
             case 'pig':
                 toRender = pigGenerator();
+            case 'ghast':
+                toRender = ghastGenerator();
+                break;
             default:
                 throw new Error('invalid model');
         }
@@ -562,6 +566,9 @@ const main = async (): Promise<void> => {
                 break;
             case 'creeper':
                 creeperToDownloadedJSON()
+                break;
+            case 'ghast':
+                ghastToDownloadedJSON()
                 break;
             default:
                 throw new Error('invalid model');
