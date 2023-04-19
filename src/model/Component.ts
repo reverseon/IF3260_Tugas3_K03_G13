@@ -143,6 +143,7 @@ class ComponentSaver {
         this.topLevelComponents.push(component);
     }
     static loadfromJSON(json: any): ComponentSaver {
+        console.log(json.texturePath);
         let componentSaver = new ComponentSaver(json.name, json.texturePath, json.totalAnimationFrames);
         componentSaver.animationMatrixPath = json.animationMatrixPath;
         for (let i = 0; i < json.topLevelComponents.length; i++) {

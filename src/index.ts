@@ -585,6 +585,41 @@ const main = async (): Promise<void> => {
             isPaused = true;
         }
     })
+
+    // LOAD FILE
+
+    let jsonfile = document.getElementById("json-file") as HTMLInputElement;
+    jsonfile.addEventListener("change", async () => {
+        let file = jsonfile.files![0];
+        togglePerspectiveMode(gl, camera);
+        camYRotationSlider.valueAsNumber = 0;
+        camRadiusSlider.valueAsNumber = 1;
+        camera.rotationRad.y = 0;
+        let reader = new FileReader();
+        reader.readAsText(file);
+        comXRotSlider.value = '0';
+        comYRotSlider.value = '0';
+        comZRotSlider.value = '0';
+        comXTransSlider.value = '0';
+        comYTransSlider.value = '0';
+        comZTransSlider.value = '0';
+        comScaleXSlider.value = '1';
+        comScaleYSlider.value = '1';
+        comScaleZSlider.value = '1';
+        currentComponent.resetTransformation();
+        isPaused = true;
+        reader.onload = async () => {
+            try {
+                let json = JSON.parse(reader.result as string);
+                toRender = await loadModelJson(gl, json);
+                currentComponent = toRender.topLevelComponents[0];
+                reRender();
+            } catch (e) {
+                console.log(e)
+                alert("Invalid JSON file");
+            }
+        }
+    })
 }
 
 main().then(() => {
