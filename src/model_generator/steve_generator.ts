@@ -516,6 +516,30 @@ export default function steveGenerator(): ComponentSaver {
     const myLeftArm = new Component("Left Arm", newLeftArmPosition, armTexCoordsComplete);
     const myRightArm = new Component("Right Arm", newRightArmPosition, armTexCoordsComplete);
 
+     // ANIMATION GENERATION //
+    let leftArmAnimArray: Mat4[] = [];
+    let rightArmAnimArray: Mat4[] = [];
+    let leftFootAnimArray: Mat4[] = [];
+    let rightFootAnimArray: Mat4[] = [];
+    const TOTALFRAMES = 30;
+
+    toSave.totalAnimationFrames = TOTALFRAMES;
+
+    const ARM_ANGLE = Math.PI / 15;
+    const LEG_ANGLE = Math.PI / 15;
+    for (let i = 0; i < TOTALFRAMES; i++) {
+        const armAngle = ((i % (4 * ARM_ANGLE)) < (2 * ARM_ANGLE)) ? i % (2 * ARM_ANGLE) : -(i % (2 * ARM_ANGLE));
+        leftArmAnimArray.push(Mat4.rotation_x(armAngle));
+        rightArmAnimArray.push(Mat4.rotation_x(-armAngle));
+        const legAngle = ((i % (4 * LEG_ANGLE)) < (2 * LEG_ANGLE)) ? i % (2 * LEG_ANGLE) : -(i % (2 * LEG_ANGLE));
+        leftFootAnimArray.push(Mat4.rotation_x(-legAngle));
+        rightFootAnimArray.push(Mat4.rotation_x(legAngle));
+    }
+
+    myLeftArm.animationMatrix = leftArmAnimArray;
+    myRightArm.animationMatrix = rightArmAnimArray;
+    myLeftFoot.animationMatrix = leftFootAnimArray;
+    myRightFoot.animationMatrix = rightFootAnimArray;
     myCube.addChild(myHead);
     myCube.addChild(myLeftArm);
     myCube.addChild(myRightArm);
@@ -526,6 +550,7 @@ export default function steveGenerator(): ComponentSaver {
 
     return toSave;
 }
+
 
 
 
