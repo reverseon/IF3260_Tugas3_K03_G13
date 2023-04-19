@@ -10,6 +10,7 @@ import {Vec2} from "./model/Vec2";
 import {downloadToSaveJSON} from "./model_generator/example_model";
 import ExampleModel from "../shape/example_model.json";
 import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
+import steveGenerator, {steveToDownloadedJSON} from "./model_generator/steve_generator";
 
 let isFirstRun = true;
 const vertexShaderSource = `
@@ -301,7 +302,8 @@ const main = async (): Promise<void> => {
     // LOADING MODEL & ITS TEXTURE //
 
     // toRender = await loadModelJson(gl, ExampleModel);
-    toRender = creeperGenerator();
+    //toRender = creeperGenerator();
+    toRender = steveGenerator();
     await setTexturesFromComponentSaver(gl, toRender)
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
