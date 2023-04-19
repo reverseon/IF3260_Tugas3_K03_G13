@@ -301,8 +301,6 @@ const main = async (): Promise<void> => {
 
     // LOADING MODEL & ITS TEXTURE //
 
-    // toRender = await loadModelJson(gl, ExampleModel);
-    //toRender = creeperGenerator();
     toRender = steveGenerator();
     await setTexturesFromComponentSaver(gl, toRender)
     currentComponent = toRender.topLevelComponents[0];
@@ -326,6 +324,38 @@ const main = async (): Promise<void> => {
     }
 
     reRender()
+
+    const modelSelection = document.getElementById("character-select") as HTMLSelectElement;
+    modelSelection.addEventListener("change", async () => {
+        comXRotSlider.value = '0';
+        comYRotSlider.value = '0';
+        comZRotSlider.value = '0';
+        comXTransSlider.value = '0';
+        comYTransSlider.value = '0';
+        comZTransSlider.value = '0';
+        comScaleXSlider.value = '1';
+        comScaleYSlider.value = '1';
+        comScaleZSlider.value = '1';
+        switch (modelSelection.value) {
+            case 'steve':
+                toRender = steveGenerator();
+                break;
+            case 'creeper':
+                toRender = creeperGenerator();
+                break;
+            default:
+                throw new Error('invalid model');
+        }
+        currentComponent.resetTransformation();
+        await setTextures(toRender);
+        currentComponent = toRender.topLevelComponents[0];
+        reRender();
+    })
+
+    async function setTextures(toRender: ComponentSaver) {
+        await setTexturesFromComponentSaver(gl, toRender)
+    }
+
     // cam setup listener
 
     const projectionMode = document.getElementById('projection-select') as HTMLSelectElement;
