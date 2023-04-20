@@ -18,7 +18,7 @@ import TextureMapping from "./shader/TextureMapping";
 import EnvironmentMapping from "./shader/EnvironmentMapping";
 
 let isFirstRun = true;
-let choose_map : string = "environment";
+let choose_map : string = "texture";
 
 // const perspectiveModeDefaultPosition = [0, 300, 500, 0];
 // const orthographicModeDefaultPosition = [0, 50, 100, 0];
@@ -107,7 +107,7 @@ const main = async (): Promise<void> => {
     // LOADING MODEL & ITS TEXTURE //
     toRender = steveGenerator();
     if(mapping){
-        await mapping.loadModel(toRender);
+        await mapping.setTextures(toRender);
     }
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
@@ -163,6 +163,7 @@ const main = async (): Promise<void> => {
             if(mapping) await mapping.setTextures(toRender);
             currentComponent = toRender.topLevelComponents[0];
             reRender();
+            updateComponentTree();
         })
         
         
@@ -436,6 +437,35 @@ const main = async (): Promise<void> => {
                 alert("Invalid JSON file");
             }
         }
+    })
+
+    const textureSelection = document.getElementById('texture-select') as HTMLSelectElement;
+    textureSelection.addEventListener('change', async () => {
+        // switch(choose_map){
+        //     case "texture":
+        //         mapping = new TextureMapping(gl);
+        //         break;
+        //     case "environment":
+        //         mapping = new EnvironmentMapping(gl);
+        //         break;
+        //     default:
+        //         mapping = new TextureMapping(gl);
+        //         break;
+        // } }
+        const value = textureSelection.value;
+        switch (value) {
+            case 'texture':
+                mapping = new TextureMapping(gl);
+                break;
+            case 'environment':
+                mapping = new EnvironmentMapping(gl);
+                break;
+            default:
+                mapping = new TextureMapping(gl);
+                break;
+        }
+        await mapping.setTextures(toRender!);
+        reRender();
     })
     reRender();
 }
