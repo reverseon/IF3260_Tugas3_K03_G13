@@ -12,7 +12,7 @@ import ExampleModel from "../shape/example_model.json";
 import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
 import steveGenerator, {steveToDownloadedJSON} from "./model_generator/steve_generator";
 import ghastGenerator, {ghastToDownloadedJSON} from "./model_generator/ghast_generator";
-import pigGenerator from "./model_generator/pig_model";
+import pigGenerator, {downloadPigModel} from "./model_generator/pig_model";
 import Mapping from "./shader/Mapping";
 import TextureMapping from "./shader/TextureMapping";
 import EnvironmentMapping from "./shader/EnvironmentMapping";
