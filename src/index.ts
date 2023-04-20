@@ -105,20 +105,20 @@ const main = async (): Promise<void> => {
             break;
     }
     // LOADING MODEL & ITS TEXTURE //
-
-    toRender = pigGenerator();
+    toRender = steveGenerator();
     if(mapping){
         await mapping.loadModel(toRender);
     }
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
     // console.log("currentComponent:", currentComponent)
-
+    
     const camera = new CameraSettings();
+    //togglePerspectiveMode(mapping.gl, camera);
     togglePerspectiveMode(mapping.gl, camera);
     const lookAtCurrentComponent = document.getElementById('lookat-current-component-checkbox') as HTMLInputElement;
-
-
+    
+    
     const reRender = () => {
         // update camera center to current component
         if (lookAtCurrentComponent.checked) {
@@ -126,11 +126,12 @@ const main = async (): Promise<void> => {
         } else {
             camera.centeredAt = new Vec4([0,0,0,1]);
         }
-        if(mapping) mapping.render(camera, toRender!);
+        
+        console.log(mapping);
+        mapping!.render(camera, toRender!);
     }
-
-    reRender()
-
+    
+    
     const modelSelection = document.getElementById("character-select") as HTMLSelectElement;
     modelSelection.addEventListener("change", async () => {
         comXRotSlider.value = '0';
@@ -146,24 +147,25 @@ const main = async (): Promise<void> => {
             case 'steve':
                 toRender = steveGenerator();
                 break;
-            case 'creeper':
-                toRender = creeperGenerator();
-                break;
-            case 'pig':
-                toRender = pigGenerator();
-                break;
-            case 'ghast':
+                case 'creeper':
+                    toRender = creeperGenerator();
+                    break;
+                    case 'pig':
+                        toRender = pigGenerator();
+                        break;
+                        case 'ghast':
                 toRender = ghastGenerator();
                 break;
             default:
                 throw new Error('invalid model');
-        }
-        currentComponent.resetTransformation();
-        if(mapping) await mapping.setTextures(toRender);
-        currentComponent = toRender.topLevelComponents[0];
-        reRender();
-    })
-
+            }
+            currentComponent.resetTransformation();
+            if(mapping) await mapping.setTextures(toRender);
+            currentComponent = toRender.topLevelComponents[0];
+            reRender();
+        })
+        
+        
     // cam setup listener
 
     const projectionMode = document.getElementById('projection-select') as HTMLSelectElement;
@@ -431,6 +433,7 @@ const main = async (): Promise<void> => {
             }
         }
     })
+    reRender();
 }
 
 main().then(() => {
