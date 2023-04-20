@@ -533,6 +533,7 @@ export default function ghastGenerator() : ComponentSaver {
     );
 
     //TODO : animation
+    
     headComponent.addChild(rightFrontLegComponent);
     headComponent.addChild(centerFrontLegComponent);
     headComponent.addChild(leftFrontLegComponent);

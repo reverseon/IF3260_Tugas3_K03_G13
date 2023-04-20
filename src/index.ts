@@ -12,187 +12,13 @@ import ExampleModel from "../shape/example_model.json";
 import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
 import steveGenerator, {steveToDownloadedJSON} from "./model_generator/steve_generator";
 import ghastGenerator, {ghastToDownloadedJSON} from "./model_generator/ghast_generator";
-import pigGenerator, {downloadPigModel} from "./model_generator/pig_model";
+import pigGenerator from "./model_generator/pig_model";
+import Mapping from "./shader/Mapping";
+import TextureMapping from "./shader/TextureMapping";
+import EnvironmentMapping from "./shader/EnvironmentMapping";
 
 let isFirstRun = true;
-const vertexShaderSource = `
-    attribute vec4 a_position;
-    attribute vec2 a_texcoord;
-    attribute vec4 a_normal;
-
-    uniform mat4 u_worldViewProjection;
-    uniform mat4 u_world;
-
-    varying vec3 v_normal;
-    varying vec2 v_texcoord;
-
-    void main() {
-      gl_Position = u_worldViewProjection * a_position;
-      v_normal = mat3(u_world) * a_normal.xyz;
-      v_texcoord = a_texcoord;
-    }
-`;
-
-const fragmentShaderSource = `
-    precision mediump float;
-    
-    varying vec3 v_normal;
-    varying vec2 v_texcoord;
-    
-    uniform vec3 u_reverseLightDirection;
-    uniform bool u_shading;
-    uniform sampler2D u_texture;
-    
-    void main() {
-      vec3 normal = normalize(v_normal);
-      float light = dot(normal, u_reverseLightDirection);
-      gl_FragColor = texture2D(u_texture, v_texcoord);
-      if (u_shading) {
-          gl_FragColor.rgb *= light;
-      }
-    }
-`;
-
-
-const renderSingleShape = (
-    gl: WebGLRenderingContext,
-    program: WebGLProgram,
-    camera: CameraSettings,
-    component: Component,
-    attribLocations: {
-        position: number,
-        texcoord: number,
-        normal: number,
-    },
-    uniformLocations: {
-        worldViewProjection: WebGLUniformLocation,
-        world: WebGLUniformLocation,
-        reverseLightDirection: WebGLUniformLocation,
-        shading: WebGLUniformLocation,
-    },
-    buffers: {
-        position: WebGLBuffer,
-        normal: WebGLBuffer,
-        texcoord: WebGLBuffer,
-    },
-    prevWorldMatrix: Mat4,
-
-): void => {
-    const position = component.positionArray;
-    const texCoord = component.texCoordArray;
-    const world = prevWorldMatrix.mul(component.worldMatrix);
-    // position
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-    gl.bufferData(gl.ARRAY_BUFFER, MathUtil.makeFloat32ArrayFromVec4Array(position), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(attribLocations.position);
-    gl.vertexAttribPointer(attribLocations.position, 4, gl.FLOAT, false, 0, 0);
-    // texcoord
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texcoord);
-    gl.bufferData(gl.ARRAY_BUFFER, MathUtil.makeFloat32ArrayFromVec2Array(texCoord), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(attribLocations.texcoord);
-    gl.vertexAttribPointer(attribLocations.texcoord, 2, gl.FLOAT, false, 0, 0);
-    // normal
-    const normal = MathUtil.makeNormalArray(position);
-    if (normal.length !== position.length) {
-        throw new Error('normal.length !== Position.length');
-    }
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-    gl.bufferData(gl.ARRAY_BUFFER, MathUtil.makeFloat32ArrayFromVec4Array(normal), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(attribLocations.normal);
-    gl.vertexAttribPointer(attribLocations.normal, 4, gl.FLOAT, false, 0, 0);
-    // uniform
-    const viewMatrix = camera.getViewMatrix();
-    const projectionMatrix = camera.getProjectionMatrix();
-    const worldViewProjectionMatrix = projectionMatrix.mul(viewMatrix).mul(world);
-    // console.log("worldMatrix");
-    // world.print();
-    // console.log("viewMatrix");
-    // viewMatrix.print();
-    // console.log("projectionMatrix");
-    // projectionMatrix.print();
-    // console.log("worldViewProjectionMatrix");
-    // worldViewProjectionMatrix.print();
-    gl.uniformMatrix4fv(uniformLocations.worldViewProjection, false, worldViewProjectionMatrix.toFloat32Array());
-    gl.uniformMatrix4fv(uniformLocations.world, false, world.toFloat32Array());
-    gl.uniform3fv(uniformLocations.reverseLightDirection, camera.light.xyz.normalize().toFloat32Array());
-    gl.uniform1i(uniformLocations.shading, camera.shading ? 1 : 0);
-    gl.drawArrays(gl.TRIANGLES, 0, position.length);
-    // console.log("glPosition");
-    // console.log(MathUtil.multiplyMat4byVec4Array(worldViewProjectionMatrix, position));
-}
-
-
-const render =
-    (
-        gl: WebGLRenderingContext,
-        program: WebGLProgram,
-        camera: CameraSettings,
-        compSaver: ComponentSaver,
-    ): void => {
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);
-        // attribute
-        const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-        const texcoordAttributeLocation = gl.getAttribLocation(program, 'a_texcoord');
-        const normalAttributeLocation = gl.getAttribLocation(program, 'a_normal');
-        // uniform
-        const worldViewProjectionUniformLocation = gl.getUniformLocation(program, 'u_worldViewProjection');
-        const worldUniformLocation = gl.getUniformLocation(program, 'u_world');
-        const reverseLightDirectionUniformLocation = gl.getUniformLocation(program, 'u_reverseLightDirection');
-        const shadingUniformLocation = gl.getUniformLocation(program, 'u_shading');
-        const textureUniformLocation = gl.getUniformLocation(program, 'u_texture');
-        gl.uniform1i(textureUniformLocation, 0)
-        // buffer
-        const positionBuffer = gl.createBuffer();
-        const texcoordBuffer = gl.createBuffer();
-        const normalBuffer = gl.createBuffer();
-        const rssWrap = (cmp: Component, pwMat: Mat4): void => {
-            renderSingleShape(
-                gl,
-                program,
-                camera,
-                cmp,
-                {
-                    position: positionAttributeLocation,
-                    texcoord: texcoordAttributeLocation,
-                    normal: normalAttributeLocation,
-                },
-                {
-                    worldViewProjection: worldViewProjectionUniformLocation!,
-                    world: worldUniformLocation!,
-                    reverseLightDirection: reverseLightDirectionUniformLocation!,
-                    shading: shadingUniformLocation!,
-                },
-                {
-                    position: positionBuffer!,
-                    normal: normalBuffer!,
-                    texcoord: texcoordBuffer!,
-                },
-                pwMat,
-            );
-        }
-        const recursiveRender = (cmp: Component, pwm: Mat4): void => {
-            // bind texture here
-            rssWrap(cmp, pwm);
-            if (cmp.isThereAChild()) {
-                const children = cmp.children
-                for (let i = 0; i < children!.length; i++) {
-                    recursiveRender(children![i], pwm.mul(cmp.worldMatrix));
-                }
-            }
-        }
-        const components = compSaver.topLevelComponents;
-        for (let i = 0; i < components.length; i++) {
-            const pwm = components[i].worldMatrix;
-            recursiveRender(components[i], pwm);
-        }
-}
-
-const isPowerOf2 = (value: number): boolean => {
-    return (value & (value - 1)) === 0;
-}
+let choose_map : string = "environment";
 
 // const perspectiveModeDefaultPosition = [0, 300, 500, 0];
 // const orthographicModeDefaultPosition = [0, 50, 100, 0];
@@ -252,38 +78,6 @@ const resetCamParams = (gl: WebGLRenderingContext, camera: CameraSettings, mode:
     }
 }
 
-const setTexturesFromComponentSaver = async (gl: WebGLRenderingContext, compSaver: ComponentSaver): Promise<void> => {
-    const imgloadPromise = new Promise (resolve => {
-        const img = new Image();
-        img.src = compSaver.texturePath;
-        img.onload = function () {
-            const texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-            if (isPowerOf2(img.width) && isPowerOf2(img.height)) {
-                gl.generateMipmap(gl.TEXTURE_2D);
-            } else {
-                // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                // repeat
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-            }
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            resolve(0);
-        }
-    })
-    await imgloadPromise;
-}
-
-const loadModelJson = async (gl: WebGLRenderingContext, json: any): Promise<ComponentSaver> => {
-    // this json is from JSON.stringify(ComponentSaver), write to get back
-    const newComponentSaver = ComponentSaver.loadfromJSON(json);
-    await setTexturesFromComponentSaver(gl, newComponentSaver);
-    return newComponentSaver;
-}
-
 const main = async (): Promise<void> => {
     // console.log(ExampleModel)
     let toRender: ComponentSaver | undefined = undefined;
@@ -298,23 +92,33 @@ const main = async (): Promise<void> => {
     // INITIALIZATION //
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-    const program = createProgramFromSources(gl, vertexShaderSource, fragmentShaderSource)
-    gl.useProgram(program);
-
+    let mapping : Mapping | null;
+    switch(choose_map){
+        case "texture":
+            mapping = new TextureMapping(gl);
+            break;
+        case "environment":
+            mapping = new EnvironmentMapping(gl);
+            break;
+        default:
+            mapping = new TextureMapping(gl);
+            break;
+    }
     // LOADING MODEL & ITS TEXTURE //
-
     toRender = steveGenerator();
-    await setTexturesFromComponentSaver(gl, toRender)
+    if(mapping){
+        await mapping.loadModel(toRender);
+    }
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
     // console.log("currentComponent:", currentComponent)
-
+    
     const camera = new CameraSettings();
-    togglePerspectiveMode(gl, camera);
-
+    //togglePerspectiveMode(mapping.gl, camera);
+    togglePerspectiveMode(mapping.gl, camera);
     const lookAtCurrentComponent = document.getElementById('lookat-current-component-checkbox') as HTMLInputElement;
-
-
+    
+    
     const reRender = () => {
         // update camera center to current component
         if (lookAtCurrentComponent.checked) {
@@ -322,11 +126,12 @@ const main = async (): Promise<void> => {
         } else {
             camera.centeredAt = new Vec4([0,0,0,1]);
         }
-        render(gl, program, camera, toRender!)
+        
+        console.log(mapping);
+        mapping!.render(camera, toRender!);
     }
-
-    reRender()
-
+    
+    
     const modelSelection = document.getElementById("character-select") as HTMLSelectElement;
     modelSelection.addEventListener("change", async () => {
         comXRotSlider.value = '0';
@@ -342,29 +147,25 @@ const main = async (): Promise<void> => {
             case 'steve':
                 toRender = steveGenerator();
                 break;
-            case 'creeper':
-                toRender = creeperGenerator();
-                break;
-            case 'pig':
-                toRender = pigGenerator();
-                break
-            case 'ghast':
+                case 'creeper':
+                    toRender = creeperGenerator();
+                    break;
+                    case 'pig':
+                        toRender = pigGenerator();
+                        break;
+                        case 'ghast':
                 toRender = ghastGenerator();
                 break;
             default:
                 throw new Error('invalid model');
-        }
-        currentComponent.resetTransformation();
-        await setTextures(toRender);
-        currentComponent = toRender.topLevelComponents[0];
-        reRender();
-        updateComponentTree()
-    })
-
-    async function setTextures(toRender: ComponentSaver) {
-        await setTexturesFromComponentSaver(gl, toRender)
-    }
-
+            }
+            currentComponent.resetTransformation();
+            if(mapping) await mapping.setTextures(toRender);
+            currentComponent = toRender.topLevelComponents[0];
+            reRender();
+        })
+        
+        
     // cam setup listener
 
     const projectionMode = document.getElementById('projection-select') as HTMLSelectElement;
@@ -626,8 +427,8 @@ const main = async (): Promise<void> => {
         reader.onload = async () => {
             try {
                 let json = JSON.parse(reader.result as string);
-                toRender = await loadModelJson(gl, json);
-                currentComponent = toRender.topLevelComponents[0];
+                if(mapping) toRender = await mapping.loadModelJson(json);
+                currentComponent = toRender!.topLevelComponents[0];
                 reRender();
                 updateComponentTree();
             } catch (e) {
@@ -636,6 +437,7 @@ const main = async (): Promise<void> => {
             }
         }
     })
+    reRender();
 }
 
 main().then(() => {
