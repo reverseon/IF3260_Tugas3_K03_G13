@@ -303,7 +303,7 @@ const main = async (): Promise<void> => {
 
     // LOADING MODEL & ITS TEXTURE //
 
-    toRender = pigGenerator();
+    toRender = steveGenerator();
     await setTexturesFromComponentSaver(gl, toRender)
     currentComponent = toRender.topLevelComponents[0];
     // console.log("toRender:", toRender)
@@ -347,6 +347,7 @@ const main = async (): Promise<void> => {
                 break;
             case 'pig':
                 toRender = pigGenerator();
+                break
             case 'ghast':
                 toRender = ghastGenerator();
                 break;
@@ -357,6 +358,7 @@ const main = async (): Promise<void> => {
         await setTextures(toRender);
         currentComponent = toRender.topLevelComponents[0];
         reRender();
+        updateComponentTree()
     })
 
     async function setTextures(toRender: ComponentSaver) {
@@ -624,6 +626,7 @@ const main = async (): Promise<void> => {
                 toRender = await loadModelJson(gl, json);
                 currentComponent = toRender.topLevelComponents[0];
                 reRender();
+                updateComponentTree();
             } catch (e) {
                 console.log(e)
                 alert("Invalid JSON file");
