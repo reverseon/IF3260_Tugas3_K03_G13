@@ -521,10 +521,13 @@ export default function pigGenerator(): ComponentSaver {
 }
 
 const downloadPigModel = () => {
-    // make a link to download the file
+    const componentSaver = pigGenerator();
+    const componentSaverJSON = JSON.stringify(componentSaver);
+    const blob = new Blob([componentSaverJSON], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = 'pig.json';
-    link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(pigGenerator()));
-    link.click();
+    link.download = "pig.json";
+    link.href = url;
+    link.click()
 }
 export {downloadPigModel, pigGenerator};

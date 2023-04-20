@@ -12,7 +12,7 @@ import ExampleModel from "../shape/example_model.json";
 import creeperGenerator, {creeperToDownloadedJSON} from "./model_generator/creeper_generator";
 import steveGenerator, {steveToDownloadedJSON} from "./model_generator/steve_generator";
 import ghastGenerator, {ghastToDownloadedJSON} from "./model_generator/ghast_generator";
-import pigGenerator from "./model_generator/pig_model";
+import pigGenerator, {downloadPigModel} from "./model_generator/pig_model";
 
 let isFirstRun = true;
 const vertexShaderSource = `
@@ -571,6 +571,9 @@ const main = async (): Promise<void> => {
                 break;
             case 'ghast':
                 ghastToDownloadedJSON()
+                break;
+            case 'pig':
+                downloadPigModel()
                 break;
             default:
                 throw new Error('invalid model');
